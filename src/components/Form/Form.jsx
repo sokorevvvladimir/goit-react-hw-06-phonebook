@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
+import { getContacts } from '../../redux/selectors';
+import { useSelector, useDispatch } from 'react-redux';
+import toast from 'react-hot-toast';
+import { addItem } from '../../redux/itemsSlice';
 
 const FormHtml = styled.form`
   border: 2px solid #000000;
@@ -65,9 +68,34 @@ const Button = styled.button`
   }
 `;
 
-const ContactForm = ({ onSubmit }) => {
+const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
+
+  const onSameName = data => {
+    return contacts.find(
+      ({ name }) => name.toLowerCase() === data.name.toLowerCase()
+    );
+  };
+
+  const onSamePhoneNumber = data => {
+    return contacts.find(({ number }) => number === data.number);
+  };
+
+  const onFormSubmit = data => {
+    if (onSameName(data)) {
+      toast.error(`${data.name} is already in contacts.`);
+      return;
+    }
+    if (onSamePhoneNumber(data)) {
+      toast.error(`Contact with ${data.number} number is already in contacts.`);
+      return;
+    }
+    dispatch(addItem(data));
+    return;
+  };
 
   const onInputHandler = e => {
     const { name, value } = e.currentTarget;
@@ -89,7 +117,7 @@ const ContactForm = ({ onSubmit }) => {
 
   const onSubmitHandler = e => {
     e.preventDefault();
-    onSubmit(objectCompiler());
+    onFormSubmit(objectCompiler());
     reset();
   };
 
@@ -132,7 +160,3 @@ const ContactForm = ({ onSubmit }) => {
 };
 
 export default ContactForm;
-
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};

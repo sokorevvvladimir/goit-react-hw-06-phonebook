@@ -1,5 +1,7 @@
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { changeFilter, clearFilter } from '../../redux/filterSlice';
+import { getFilter } from '../../redux/selectors';
 
 const Label = styled.label`
   display: flex;
@@ -23,24 +25,29 @@ const Input = styled.input`
   })
 `;
 
-const Filter = ({ onFilterInput, onBlur, value }) => {
+const Filter = () => {
+  const dispatch = useDispatch();
+  const filter = useSelector(getFilter);
+
+  const onInputHandler = e => {
+    dispatch(changeFilter(e.currentTarget.value));
+  };
+
+  const filterReset = () => {
+    dispatch(clearFilter());
+  };
+
   return (
     <Label>
       Find contacts by name
       <Input
         type="text"
-        value={value}
-        onChange={onFilterInput}
-        onBlur={onBlur}
+        value={filter}
+        onChange={onInputHandler}
+        onBlur={filterReset}
       />
     </Label>
   );
 };
 
 export default Filter;
-
-Filter.propTypes = {
-  onFilterInput: PropTypes.func.isRequired,
-  onBlur: PropTypes.func.isRequired,
-  value: PropTypes.string.isRequired,
-};

@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { removeItem } from '../../redux/itemsSlice';
 import Notification from '../Notification';
-import PropTypes from 'prop-types';
+import { getContacts, getFilter } from '../../redux/selectors';
 
 const StyledUl = styled.ul`
   padding-inline-start: 0;
@@ -54,13 +54,27 @@ const Button = styled.button`
   }
 `;
 
-const List = ({ contacts }) => {
+const List = () => {
   const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+
+  const getFilteredContacts = () => {
+    if (contacts.length === 0) {
+      return contacts;
+    }
+    const normalizedFilter = filter.toLowerCase();
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  const filteredContacts = getFilteredContacts();
 
   return (
     <StyledUl>
       {contacts &&
-        contacts.map(({ name, id, number }) => {
+        filteredContacts.map(({ name, id, number }) => {
           return (
             <Li key={id}>
               {name}: {number}
@@ -74,11 +88,3 @@ const List = ({ contacts }) => {
 };
 
 export default List;
-
-List.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    })
-  ),
-};
